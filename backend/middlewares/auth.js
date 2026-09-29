@@ -5,7 +5,7 @@ exports.authenticate = async (req, res, next) => {
     try {
         const token = req.headers.authorization.split(" ")[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-        const user = await User.findOne({ username: decoded.userName, email: decoded.userEmail });
+        const user = await User.findOne({ email: decoded.userEmail });
         if (!user) throw new Error("No user found!");
         req.user = user;
         next();

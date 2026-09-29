@@ -10,7 +10,7 @@ import Reminders from "./pages/Reminders";
 import Tasks from "./pages/Tasks";
 import Goals from "./pages/Goals";
 import Account from "./pages/Account";
-import Navbar from "./components/Navbar";
+import NavbarAuth from "./components/NavbarAuth";
 
 function App() {
     return (
@@ -18,29 +18,15 @@ function App() {
             <Routes>
                 <Route path="/" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/overview" element={<Overview />} />
-                <Route path="/calender" element={<Calender />} />
-                <Route path="/reminders" element={<Reminders />} />
-                <Route path="/tasks" element={<Tasks />} />
-                <Route
-                    path="/goals"
-                    element={
-                        <>
-                            <Navbar />
-                            <Goals />
-                        </>
-                    }
-                />
-                <Route
-                    path="/account"
-                    element={
-                        <>
-                            <Navbar />
-                            <Account />
-                        </>
-                    }
-                />
+                <Route element={<NavbarAuth />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/overview" element={<Overview />} />
+                    <Route path="/calender" element={<Calender />} />
+                    <Route path="/reminders" element={<Reminders />} />
+                    <Route path="/tasks" element={<Tasks />} />
+                    <Route path="/goals" element={<Goals />} />
+                    <Route path="/account" element={<Account />} />
+                </Route>
             </Routes>
         </BrowserRouter>
     );

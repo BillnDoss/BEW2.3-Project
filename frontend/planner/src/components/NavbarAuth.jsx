@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import { Outlet } from "react-router";
+import Navbar from "./Navbar";
 import api from "../utils/api";
 
-function Overview() {
-    const [username, setUsername] = useState(null);
-    const navigate = useNavigate();
+function AdminAuth() {
+    const [user, setUser] = useState(null);
+
     useEffect(() => {
         api.get("/users/one", {
             headers: {
@@ -12,23 +13,24 @@ function Overview() {
             },
         })
             .then((response) => {
-                setUsername(response.data);
+                setUser(response.data);
             })
             .catch((error) => {
                 console.error(error);
             });
     }, []);
 
-    if (!username) {
+    if (!user) {
         return <p>Loading...</p>;
     }
-    
 
     return (
         <>
-            <h1>Welcome back, {username.name}</h1>
+            <Navbar user={user} />
+            {/* This is a placeholder for different child pages */}
+            <Outlet />
         </>
     );
 }
 
-export default Overview;
+export default AdminAuth;

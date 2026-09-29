@@ -3,8 +3,49 @@ import { useNavigate } from "react-router";
 import api from "../utils/api";
 
 function Reminders() {
+    const [reminders, setReminders] = useState([]);
     const navigate = useNavigate();
-    return <></>;
+
+    useEffect(() => {
+        const getAllReminders = async (userToken) => {
+            try {
+                const userToken = localStorage.getItem("token");
+                console.log(userToken);
+                if (userToken == null) throw new Error("User Token is unavailable");
+
+                const response = await api.get("/reminders", {
+                    headers: {
+                        Authorization: `Bearer ${userToken}`,
+                    },
+                });
+                setReminders(response.data);
+            } catch (error) {
+                console.log(error);
+                localStorage.removeItem("token");
+                navigate("/");
+            }
+        };
+        getAllReminders();
+    }, []);
+
+    useEffect(() => {
+        console.log(reminders);
+    }, [reminders]);
+    return (
+        <>
+            <h1>Reminders</h1>
+            <h3>Here are your currently set Reminders:</h3>
+            {reminders.map((reminder) => (
+                <div key={reminder._id}>
+                    <h2>{reminder.title}</h2>
+                    <p>{reminder.description}</p>
+                    <p>{reminder.remindAt}</p>
+                    {/* Add a badge with button colour depending on status */}
+                    <p>{reminder.status}</p>
+                </div>
+            ))}
+        </>
+    );
 }
 
 export default Reminders;

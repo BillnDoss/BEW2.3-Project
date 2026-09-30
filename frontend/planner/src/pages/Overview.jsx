@@ -6,7 +6,7 @@ function Overview() {
     const [username, setUsername] = useState(null);
     const navigate = useNavigate();
     useEffect(() => {
-        api.get("/users/one", {
+        api.get("/users/:id", {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             },

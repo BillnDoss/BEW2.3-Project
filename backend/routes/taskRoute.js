@@ -7,6 +7,8 @@ router.use(express.json());
 
 router.get("/", auth.authenticate, taskController.getAllTasks);
 
+router.get("/userTasks", auth.authenticate, taskController.getAllTasksUserEdition);
+
 router.get("/:id", auth.authenticate, taskController.getTaskById);
 
 router.post("/", auth.authenticate, taskController.addNewTask);

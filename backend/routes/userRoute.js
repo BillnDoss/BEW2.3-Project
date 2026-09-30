@@ -9,7 +9,7 @@ router.post("/register", userController.register);
 
 router.post("/login", userController.login);
 
-router.get("/one", authenticate, userController.retrieveOneUser);
+router.get("/:id", authenticate, userController.retrieveOneUser);
 
 router.get("/", authenticate, userController.retrieveAllUsers);
 

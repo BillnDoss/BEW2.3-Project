@@ -7,6 +7,8 @@ router.use(express.json());
 
 router.get("/", auth.authenticate, reminderController.getAllReminders);
 
+router.get("/userReminders", auth.authenticate, reminderController.getAllRemindersUserEdition);
+
 router.get("/:id", auth.authenticate, reminderController.getReminderbyId);
 
 router.post("/", auth.authenticate, reminderController.addNewReminder);

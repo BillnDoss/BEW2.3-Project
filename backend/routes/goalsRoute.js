@@ -7,6 +7,8 @@ router.use(express.json());
 
 router.get("/", auth.authenticate, goalController.getAllGoals);
 
+router.get("/userGoals", auth.authenticate, goalController.getAllGoalsUserEdition);
+
 router.get("/:id", auth.authenticate, goalController.getGoalbyId);
 
 router.post("/", auth.authenticate, goalController.addNewGoal);

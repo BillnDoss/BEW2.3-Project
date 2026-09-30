@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import "../assets/css/Login.css";
 import api from "../utils/api";
+import corndog from "../assets/images/images.jpeg"
 
 function Login() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [loginError, setLoginError] = useState("");
     const navigate = useNavigate();
 
     // Redirects users to the products page if token exists in storage but needs to be inside a useEffect
@@ -17,6 +19,7 @@ function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoginError("");
         // 💡 Add your login / authentication logic here
         console.log("Form submitted:", { name, email, password });
         try {
@@ -33,6 +36,7 @@ function Login() {
             alert("Succesfully Logged in!");
         } catch (error) {
             console.log("Login Error: ", error);
+            setLoginError("Incorrect username, email, or password.");
         }
     };
 
@@ -63,6 +67,20 @@ function Login() {
                     No account? Sign up here!
                 </button>
             </form>
+
+            {loginError && (
+                <div className="modal-overlay">
+                    <div className="error-popup">
+                        <img src={corndog} alt="Login failed" />
+
+                        <h3>Login Failed</h3>
+
+                        <p>Incorrect username, email, or password.</p>
+
+                        <button onClick={() => setLoginError("")}>Try Again</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

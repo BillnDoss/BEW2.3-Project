@@ -12,7 +12,7 @@ function Goals() {
                 console.log(userToken);
                 if (userToken == null) throw new Error("User Token is unavailable");
 
-                const response = await api.get("/goals", {
+                const response = await api.get("/goals/userGoals", {
                     headers: {
                         Authorization: `Bearer ${userToken}`,
                     },
@@ -33,18 +33,29 @@ function Goals() {
     return (
         <>
             <h1>Goals</h1>
-            <p>Here are your currently set Goals: </p>
-            {goals.map((goal) => (
-                <div key={goal._id}>
-                    <h2>{goal.title}</h2>
-                    <p>{goal.description}</p>
-                    <p>{goal.targetDate}</p>
-                    {/* Turn this into a progress bar */}
-                    <p>{goal.progress}</p>
-                    {/* Add a badge with button colour depending on status */}
-                    <p>{goal.status}</p>
-                </div>
-            ))}
+            <h3>Here are your currently set Goals: </h3>
+            {goals.length === 0 ? (
+                <p>No goals found. </p>
+            ) : (
+                goals.map((goal) => (
+                    <div key={goal._id}>
+                        <h2>{goal.title}</h2>
+                        <p>{goal.description}</p>
+                        <p>
+                            {new Date(goal.targetDate).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                            })}
+                        </p>
+
+                        {/* Turn this into a progress bar */}
+                        <p>{goal.progress}</p>
+                        {/* Add a badge with button colour depending on status */}
+                        <p>{goal.status}</p>
+                    </div>
+                ))
+            )}
         </>
     );
 }

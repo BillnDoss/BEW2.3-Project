@@ -22,6 +22,7 @@ function Login() {
             console.log("Registration successful: ", response.data);
             alert("Registration Successful!");
         } catch (error) {
+            alert("Registration Failed, User already exists or Insufficient Details!");
             console.log("Registration Error: ", error);
         }
     };

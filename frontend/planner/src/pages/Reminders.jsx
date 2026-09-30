@@ -13,7 +13,7 @@ function Reminders() {
                 console.log(userToken);
                 if (userToken == null) throw new Error("User Token is unavailable");
 
-                const response = await api.get("/reminders", {
+                const response = await api.get("/reminders/userReminders", {
                     headers: {
                         Authorization: `Bearer ${userToken}`,
                     },
@@ -35,15 +35,26 @@ function Reminders() {
         <>
             <h1>Reminders</h1>
             <h3>Here are your currently set Reminders:</h3>
-            {reminders.map((reminder) => (
-                <div key={reminder._id}>
-                    <h2>{reminder.title}</h2>
-                    <p>{reminder.description}</p>
-                    <p>{reminder.remindAt}</p>
-                    {/* Add a badge with button colour depending on status */}
-                    <p>{reminder.status}</p>
-                </div>
-            ))}
+            {reminders.length === 0 ? (
+                <p>No reminders found. </p>
+            ) : (
+                reminders.map((reminder) => (
+                    <div key={reminder._id}>
+                        <h2>{reminder.title}</h2>
+                        <p>{reminder.description}</p>
+                        <p>
+                            {new Date(reminder.remindAt).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                            })}
+                        </p>
+
+                        {/* Add a badge with button colour depending on status */}
+                        <p>{reminder.status}</p>
+                    </div>
+                ))
+            )}
         </>
     );
 }

@@ -7,7 +7,7 @@ function AdminAuth() {
     const [user, setUser] = useState(null);
 
     useEffect(() => {
-        api.get("/users/one", {
+        api.get("/users/:id", {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             },

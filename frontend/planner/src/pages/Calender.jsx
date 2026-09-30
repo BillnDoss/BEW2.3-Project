@@ -11,10 +11,10 @@ function Calender() {
         <>
             <h1>Calender</h1>
 
-            {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DateCalendar />
             </LocalizationProvider>
-                */}
+               
         </> 
     );
 }

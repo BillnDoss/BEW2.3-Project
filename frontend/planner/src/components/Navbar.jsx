@@ -54,6 +54,11 @@ function Navbar({ user }) {
                                 </NavLink>
                             </li>
                         )}
+                        <li className="nav-item">
+                            <NavLink className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")} to="/account">
+                                Account
+                            </NavLink>
+                        </li>
 
                         <button className="btn" onClick={onLogout}>
                             Logout

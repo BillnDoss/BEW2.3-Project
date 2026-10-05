@@ -11,6 +11,7 @@ import Tasks from "./pages/Tasks";
 import Goals from "./pages/Goals";
 import Account from "./pages/Account";
 import NavbarAuth from "./components/NavbarAuth";
+import AdminCheck from "./components/AdminCheck";
 
 function App() {
     return (
@@ -19,7 +20,9 @@ function App() {
                 <Route path="/" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route element={<NavbarAuth />}>
-                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route element={<AdminCheck />}>
+                        <Route path="/dashboard" element={<Dashboard />} />
+                    </Route>
                     <Route path="/overview" element={<Overview />} />
                     <Route path="/calender" element={<Calender />} />
                     <Route path="/reminders" element={<Reminders />} />

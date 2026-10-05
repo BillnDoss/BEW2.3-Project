@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import "../assets/css/Login.css";
 import api from "../utils/api";
-import corndog from "../assets/images/images.jpeg"
+import corndog from "../assets/images/images.jpeg";
 
 function Login() {
     const [name, setName] = useState("");
@@ -14,13 +14,23 @@ function Login() {
     // Redirects users to the products page if token exists in storage but needs to be inside a useEffect
     useEffect(() => {
         const userToken = localStorage.getItem("token");
-        if (userToken !== null) navigate("/overview");
-    }, []);
+        if (!userToken) return;
+        try {
+            const payload = JSON.parse(atob(userToken.split(".")[1]));
+            const expiredToken = payload.exp * 1000 < Date.now();
+            if (expiredToken) {
+                localStorage.removeItem("token");
+                return;
+            }
+            navigate("/overview");
+        } catch (error) {
+            localStorage.removeItem("token");
+        }
+    }, [navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoginError("");
-        // 💡 Add your login / authentication logic here
         console.log("Form submitted:", { name, email, password });
         try {
             // There is no need for the localhost URL and axios anymore because the api has the details

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
-const GoalModal = ({ isOpen, onClose, onSave, editingGoal = null }) => {
-    const initialFormState = {
+const GoalModal = ({ isOpen, onClose, onSave, editGoals = null }) => {
+    const defaultState = {
         title: "",
         description: "",
         targetDate: "",
@@ -11,30 +11,26 @@ const GoalModal = ({ isOpen, onClose, onSave, editingGoal = null }) => {
 
     const statuses = ["Active", "Completed"];
 
-    const [formData, setFormData] = useState(initialFormState);
+    const [formData, setFormData] = useState(defaultState);
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
         if (!isOpen) return;
 
-        if (editingGoal) {
+        if (editGoals) {
             setFormData({
-                title: editingGoal.title || "",
-
-                description: editingGoal.description || "",
-
-                targetDate: editingGoal.targetDate ? new Date(editingGoal.targetDate).toISOString().split("T")[0] : "",
-
-                progress: editingGoal.progress !== undefined && editingGoal.progress !== null ? editingGoal.progress.toString() : "0",
-
-                status: editingGoal.status || "Active",
+                title: editGoals.title || "",
+                description: editGoals.description || "",
+                targetDate: editGoals.targetDate ? new Date(editGoals.targetDate).toISOString().split("T")[0] : "",
+                progress: editGoals.progress !== undefined && editGoals.progress !== null ? editGoals.progress.toString() : "0",
+                status: editGoals.status || "Active",
             });
         } else {
-            setFormData(initialFormState);
+            setFormData(defaultState);
         }
 
         setErrors({});
-    }, [isOpen, editingGoal]);
+    }, [isOpen, editGoals]);
 
     if (!isOpen) {
         return null;
@@ -60,11 +56,9 @@ const GoalModal = ({ isOpen, onClose, onSave, editingGoal = null }) => {
         e.preventDefault();
 
         const newErrors = {};
-
         if (!formData.title.trim()) {
             newErrors.title = "Goal title is required";
         }
-
 
         if (!formData.targetDate) {
             newErrors.targetDate = "Target date is required";
@@ -85,27 +79,21 @@ const GoalModal = ({ isOpen, onClose, onSave, editingGoal = null }) => {
 
         const payload = {
             title: formData.title,
-
             description: formData.description,
-
             targetDate: formData.targetDate,
-
             progress: Number(formData.progress),
-
             status: formData.status,
         };
 
-        console.log("Submitting goal:", payload);
-
+        console.log("Adding new goal:", payload);
         onSave(payload);
     };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
             <div className="bg-white rounded-2xl border border-slate-100 shadow-xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
-
                 <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                    <h2 className="text-lg font-bold text-slate-900">{editingGoal ? "Edit Goal Details" : "Add New Goal"}</h2>
+                    <h2 className="text-lg font-bold text-slate-900">{editGoals ? "Edit Goal Details" : "Add New Goal"}</h2>
 
                     <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50 transition-colors">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -189,7 +177,7 @@ const GoalModal = ({ isOpen, onClose, onSave, editingGoal = null }) => {
                         </button>
 
                         <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors shadow-sm">
-                            {editingGoal ? "Update Goal" : "Create Goal"}
+                            {editGoals ? "Update Goal" : "Create Goal"}
                         </button>
                     </div>
                 </form>

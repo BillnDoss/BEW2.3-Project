@@ -13,4 +13,8 @@ router.get("/:id", authenticate, userController.retrieveOneUser);
 
 router.get("/", authenticate, userController.retrieveAllUsers);
 
+router.patch("/:id", authenticate, userController.updateCurrentUser);
+
+router.patch("/:id/password", authenticate, userController.changePassword);
+
 module.exports = router;

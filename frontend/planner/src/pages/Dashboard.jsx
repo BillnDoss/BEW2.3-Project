@@ -16,6 +16,7 @@ function Dashboard() {
         status: "Pending",
         dueDate: "",
     });
+    const [filter, setFilter] = useState("All");
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -57,7 +58,7 @@ function Dashboard() {
                 },
             };
 
-            const response = await api.post("/tasks", newTask, config);
+            const response = await api.post("/tasks", newAdminTask, config);
 
             setTasks((previousTasks) => [...previousTasks, response.data]);
 
@@ -73,6 +74,43 @@ function Dashboard() {
             console.log(error);
         }
     };
+
+    const filteredRoles = users.filter((user) => {
+        if (filter === "All") {
+            return true;
+        }
+
+        return user.role === filter;
+    });
+
+    const priorityColor = (priority) => {
+        switch (priority) {
+            case "Low":
+                return "success";
+            case "Medium":
+                return "warning";
+            case "High":
+                return "error";
+            default:
+                return "default";
+        }
+    };
+
+    const statusColor = (status) => {
+        switch (status) {
+            case "Pending":
+                return "default";
+            case "In Progress":
+                return "info";
+            case "Completed":
+                return "success";
+            case "Active":
+                return "primary"; 
+            default:
+                return "default";
+        }
+    };
+
     return (
         <>
             <h1>Dashboard</h1>
@@ -188,7 +226,22 @@ function Dashboard() {
                 <button type="submit">Add Task</button>
             </form>
 
-            {users.map((user) => {
+            <hr />
+
+            <h2>Users</h2>
+
+            <div>
+                <label>Filter by Role: </label>
+
+                <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+                    <option value="All">All</option>
+                    <option value="admin">Admin</option>
+                    <option value="user">User</option>
+                </select>
+            </div>
+
+            <br />
+            {filteredRoles.map((user) => {
                 const Tasks = tasks.filter((task) => String(task.userId) === String(user._id));
                 const Goals = goals.filter((goal) => String(goal.userId) === String(user._id));
                 const Reminders = reminders.filter((reminder) => String(reminder.userId) === String(user._id));
@@ -216,8 +269,14 @@ function Dashboard() {
                                 <div key={task._id}>
                                     <h4>{task.title}</h4>
                                     <p>{task.description}</p>
-                                    <p>Priority: {task.priority}</p>
-                                    <p>Status: {task.status}</p>
+                                    <p>
+                                        Priority: <Chip label={task.priority} color={priorityColor(task.priority)} size="small" />
+                                    </p>
+
+                                    <p>
+                                        Status: <Chip label={task.status} color={statusColor(task.status)} size="small" />
+                                    </p>
+
                                     <p>
                                         Due:{" "}
                                         <strong>
@@ -242,7 +301,10 @@ function Dashboard() {
                                     <h4>{goal.title}</h4>
                                     <p>{goal.description}</p>
                                     <p>Progress: {goal.progress}%</p>
-                                    <p>Status: {goal.status}</p>
+                                    <p>
+                                        Status: <Chip label={goal.status} color={statusColor(goal.status)} size="small" />
+                                    </p>
+
                                     <p>
                                         Achieve By:{" "}
                                         <strong>
@@ -266,7 +328,9 @@ function Dashboard() {
                                 <div key={reminder._id}>
                                     <h4>{reminder.title}</h4>
                                     <p>{reminder.description}</p>
-                                    <p>Status: {reminder.status}</p>
+                                    <p>
+                                        Status: <Chip label={reminder.status} color={statusColor(reminder.status)} size="small" />
+                                    </p>
                                 </div>
                             ))
                         )}

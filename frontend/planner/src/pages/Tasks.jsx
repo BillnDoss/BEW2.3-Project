@@ -29,6 +29,7 @@ function Tasks() {
             } catch (error) {
                 console.log(error);
                 localStorage.removeItem("token");
+                localStorage.removeItem("role");
                 navigate("/");
             }
         };
@@ -177,7 +178,7 @@ function Tasks() {
                                         <p className="text-slate-500 mt-1">{task.description}</p>
                                     </div>
 
-                                    <span className="px-3 py-1 text-sm rounded-full bg-slate-100 text-slate-700">{task.status}</span>
+                                    <span className="px-3 py-1 text-sm rounded-full bg-slate-100 text-slate-700">Status: {task.status}</span>
                                 </div>
 
                                 <p className="text-sm text-slate-500 mt-4">
@@ -190,7 +191,7 @@ function Tasks() {
                                 </p>
 
                                 <div className="flex gap-2 mt-4">
-                                    <span className={`px-3 py-1 text-sm rounded-full ${task.priority === "High" ? "bg-red-100 text-red-700" : task.priority === "Medium" ? "bg-yellow-100 text-yellow-700" : "bg-green-100 text-green-700"}`}>{task.priority}</span>
+                                    <span className={`px-3 py-1 text-sm rounded-full ${task.priority === "High" ? "bg-red-100 text-red-700" : task.priority === "Medium" ? "bg-yellow-100 text-yellow-700" : "bg-green-100 text-green-700"}`}> Priority: {task.priority}</span>
                                 </div>
 
                                 <div className="flex gap-2 mt-5">
@@ -214,7 +215,7 @@ function Tasks() {
                     setCurrentTask(null);
                 }}
                 onSave={handleSaveTask}
-                editingTask={currentTask}
+                editTask={currentTask}
             />
         </>
     );

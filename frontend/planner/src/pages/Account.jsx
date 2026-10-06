@@ -34,7 +34,7 @@ function Account() {
                     return;
                 }
 
-                const response = await api.get("/users/me", {
+                const response = await api.get("/users/:id", {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -48,6 +48,7 @@ function Account() {
                 console.error("Failed to fetch user:", error.response?.data || error);
 
                 localStorage.removeItem("token");
+                localStorage.removeItem("role");
                 navigate("/");
             } finally {
                 setLoading(false);

@@ -26,6 +26,7 @@ function Reminders() {
             } catch (error) {
                 console.log(error);
                 localStorage.removeItem("token");
+                localStorage.removeItem("role");
                 navigate("/");
             }
         };
@@ -180,7 +181,7 @@ function Reminders() {
                     setCurrentReminder(null);
                 }}
                 onSave={handleSaveReminder}
-                editingReminder={currentReminder}
+                editReminder={currentReminder}
             />
         </>
     );

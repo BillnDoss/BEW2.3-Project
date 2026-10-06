@@ -20,32 +20,35 @@ function Login() {
             const expiredToken = payload.exp * 1000 < Date.now();
             if (expiredToken) {
                 localStorage.removeItem("token");
+                localStorage.removeItem("role");
+
                 return;
             }
-            navigate("/overview");
+            navigate("/");
         } catch (error) {
             localStorage.removeItem("token");
+            localStorage.removeItem("role");
         }
     }, [navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoginError("");
-        console.log("Form submitted:", { name, email, password });
+
         try {
-            // There is no need for the localhost URL and axios anymore because the api has the details
             const response = await api.post("/users/login", {
                 name,
                 email,
                 password,
             });
-            // Unable to immediately store data as token in storage because it is an object
-            localStorage.setItem("token", response.data.token);
-            navigate("/overview");
+
             console.log(response.data);
-            alert("Succesfully Logged in!");
+            localStorage.setItem("token", response.data.token);
+            localStorage.setItem("role", response.data.role);
+            navigate("/overview");
+            alert("Successfully Logged in!");
         } catch (error) {
-            console.log("Login Error: ", error);
+            console.log("Login Error:", error);
             setLoginError("Incorrect username, email, or password.");
         }
     };

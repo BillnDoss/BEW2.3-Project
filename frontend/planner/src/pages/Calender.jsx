@@ -34,8 +34,8 @@ function Calendar() {
                 setReminders(remindersResponse.data);
             } catch (error) {
                 console.error("Failed to load calendar data:", error);
-
                 localStorage.removeItem("token");
+                localStorage.removeItem("role");
                 navigate("/");
             }
         };

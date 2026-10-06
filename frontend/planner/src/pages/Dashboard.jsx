@@ -1,12 +1,21 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import api from "../utils/api";
+import Chip from "@mui/material/Chip";
 
 function Dashboard() {
     const [users, setUsers] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [goals, setGoals] = useState([]);
     const [reminders, setReminders] = useState([]);
+    const [newAdminTask, setNewAdminTask] = useState({
+        userId: "",
+        title: "",
+        description: "",
+        priority: "Medium",
+        status: "Pending",
+        dueDate: "",
+    });
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -29,14 +38,155 @@ function Dashboard() {
             } catch (error) {
                 console.log(error);
                 localStorage.removeItem("token");
+                localStorage.removeItem("role");
                 navigate("/");
             }
         };
         getAllData();
     }, [navigate]);
+
+    const addAdminTask = async (e) => {
+        e.preventDefault();
+
+        try {
+            const userToken = localStorage.getItem("token");
+
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${userToken}`,
+                },
+            };
+
+            const response = await api.post("/tasks", newTask, config);
+
+            setTasks((previousTasks) => [...previousTasks, response.data]);
+
+            setNewAdminTask({
+                userId: "",
+                title: "",
+                description: "",
+                priority: "Medium",
+                status: "Pending",
+                dueDate: "",
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    };
     return (
         <>
             <h1>Dashboard</h1>
+
+            <h2>Add Task</h2>
+
+            <form onSubmit={addAdminTask}>
+                <div>
+                    <label>Assign To:</label>
+
+                    <select
+                        value={newAdminTask.userId}
+                        onChange={(e) =>
+                            setNewAdminTask({
+                                ...newAdminTask,
+                                userId: e.target.value,
+                            })
+                        }
+                        required
+                    >
+                        <option value="">Select a user</option>
+
+                        {users.map((user) => (
+                            <option key={user._id} value={user._id}>
+                                {user.name} ({user.email})
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div>
+                    <label>Title:</label>
+
+                    <input
+                        type="text"
+                        value={newAdminTask.title}
+                        onChange={(e) =>
+                            setNewAdminTask({
+                                ...newAdminTask,
+                                title: e.target.value,
+                            })
+                        }
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label>Description:</label>
+
+                    <textarea
+                        value={newAdminTask.description}
+                        onChange={(e) =>
+                            setNewAdminTask({
+                                ...newAdminTask,
+                                description: e.target.value,
+                            })
+                        }
+                    />
+                </div>
+
+                <div>
+                    <label>Priority:</label>
+
+                    <select
+                        value={newAdminTask.priority}
+                        onChange={(e) =>
+                            setNewAdminTask({
+                                ...newAdminTask,
+                                priority: e.target.value,
+                            })
+                        }
+                    >
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Status:</label>
+
+                    <select
+                        value={newAdminTask.status}
+                        onChange={(e) =>
+                            setNewAdminTask({
+                                ...newAdminTask,
+                                status: e.target.value,
+                            })
+                        }
+                    >
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Due Date:</label>
+
+                    <input
+                        type="date"
+                        value={newAdminTask.dueDate}
+                        onChange={(e) =>
+                            setNewAdminTask({
+                                ...newAdminTask,
+                                dueDate: e.target.value,
+                            })
+                        }
+                        required
+                    />
+                </div>
+
+                <button type="submit">Add Task</button>
+            </form>
 
             {users.map((user) => {
                 const Tasks = tasks.filter((task) => String(task.userId) === String(user._id));
@@ -47,7 +197,15 @@ function Dashboard() {
                     <div key={user._id}>
                         <h2>{user.name}</h2>
                         <p>{user.email}</p>
-                        <p>Role: {user.role}</p>
+                        <Chip
+                            label={user.role}
+                            size="small"
+                            sx={{
+                                backgroundColor: user.role === "admin" ? "#0dcaf0" : "#6c757d",
+                                color: user.role === "admin" ? "#000" : "#fff",
+                                fontWeight: 500,
+                            }}
+                        />
 
                         <h3>Tasks</h3>
 
@@ -61,7 +219,7 @@ function Dashboard() {
                                     <p>Priority: {task.priority}</p>
                                     <p>Status: {task.status}</p>
                                     <p>
-                                        Due: {" "}
+                                        Due:{" "}
                                         <strong>
                                             {new Date(task.dueDate).toLocaleDateString("en-US", {
                                                 year: "numeric",
@@ -86,7 +244,7 @@ function Dashboard() {
                                     <p>Progress: {goal.progress}%</p>
                                     <p>Status: {goal.status}</p>
                                     <p>
-                                        Achieve By: {" "}
+                                        Achieve By:{" "}
                                         <strong>
                                             {new Date(goal.targetDate).toLocaleDateString("en-US", {
                                                 year: "numeric",

@@ -22,8 +22,9 @@ exports.getTaskById = async (req, res) => {
 exports.addNewTask = async (req, res) => {
     const newTask = new Task({
         ...req.body,
-        userId: req.user._id,
+        userId: req.user.role === "admin" ? req.body.userId : req.user._id,
     });
+
     await newTask.save();
     res.json(newTask);
 };

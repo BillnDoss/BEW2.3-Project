@@ -14,11 +14,26 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
     try {
         const user = await User.findOne({ email: req.body.email });
+
         if (!user || !user.comparePassword(req.body.password)) {
             throw new Error("Invalid username or password");
         }
-        const token = jwt.sign({ userEmail: user.email }, process.env.JWT_SECRET_KEY, { expiresIn: process.env.JWT_EXPIRES_IN });
-        res.json({ token });
+
+        const token = jwt.sign(
+            {
+                userEmail: user.email,
+                role: user.role,
+            },
+            process.env.JWT_SECRET_KEY,
+            {
+                expiresIn: process.env.JWT_EXPIRES_IN,
+            },
+        );
+
+        res.json({
+            token,
+            role: user.role,
+        });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }

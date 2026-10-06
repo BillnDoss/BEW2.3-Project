@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { Modal, Box, Typography, TextField, Button, FormControl, InputLabel, Select, MenuItem, Slider, IconButton, Divider } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 const GoalModal = ({ isOpen, onClose, onSave, editGoals = null }) => {
     const defaultState = {
@@ -32,10 +34,6 @@ const GoalModal = ({ isOpen, onClose, onSave, editGoals = null }) => {
         setErrors({});
     }, [isOpen, editGoals]);
 
-    if (!isOpen) {
-        return null;
-    }
-
     const handleChange = (e) => {
         const { name, value } = e.target;
 
@@ -52,10 +50,25 @@ const GoalModal = ({ isOpen, onClose, onSave, editGoals = null }) => {
         }
     };
 
+    const handleProgressChange = (_, value) => {
+        setFormData((previous) => ({
+            ...previous,
+            progress: value.toString(),
+        }));
+
+        if (errors.progress) {
+            setErrors((previous) => ({
+                ...previous,
+                progress: "",
+            }));
+        }
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
         const newErrors = {};
+
         if (!formData.title.trim()) {
             newErrors.title = "Goal title is required";
         }
@@ -78,111 +91,132 @@ const GoalModal = ({ isOpen, onClose, onSave, editGoals = null }) => {
         }
 
         const payload = {
-            title: formData.title,
-            description: formData.description,
+            title: formData.title.trim(),
+            description: formData.description.trim(),
             targetDate: formData.targetDate,
             progress: Number(formData.progress),
             status: formData.status,
         };
 
-        console.log("Adding new goal:", payload);
         onSave(payload);
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                    <h2 className="text-lg font-bold text-slate-900">{editGoals ? "Edit Goal Details" : "Add New Goal"}</h2>
+        <Modal open={isOpen} onClose={onClose} aria-labelledby="goal-modal-title">
+            <Box
+                sx={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: {
+                        xs: "calc(100% - 32px)",
+                        sm: 500,
+                    },
+                    maxHeight: "90vh",
+                    overflowY: "auto",
+                    bgcolor: "background.paper",
+                    borderRadius: 3,
+                    boxShadow: 24,
+                    outline: "none",
+                }}
+            >
+                <Box
+                    className="d-flex justify-content-between align-items-center px-4 py-3"
+                    sx={{
+                        borderBottom: "1px solid",
+                        borderColor: "divider",
+                    }}
+                >
+                    <Box>
+                        <Typography id="goal-modal-title" variant="h6" fontWeight={700}>
+                            {editGoals ? "Edit Goal Details" : "Add New Goal"}
+                        </Typography>
 
-                    <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50 transition-colors">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                            {editGoals ? "Update your goal information." : "Set a new goal and track your progress."}
+                        </Typography>
+                    </Box>
 
-                <form onSubmit={handleSubmit} className="p-6 flex-1 overflow-y-auto space-y-4">
-                    <div>
-                        <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Goal Title *</label>
+                    <IconButton onClick={onClose} aria-label="close" size="small">
+                        <CloseIcon />
+                    </IconButton>
+                </Box>
 
-                        <input
-                            type="text"
-                            name="title"
-                            value={formData.title}
-                            onChange={handleChange}
-                            placeholder="e.g. Complete my first 10K"
-                            className={`w-full px-3.5 py-2 text-sm bg-white border ${errors.title ? "border-red-500 focus:ring-red-500" : "border-slate-200 focus:ring-slate-900"} rounded-xl focus:outline-none focus:ring-2`}
-                        />
+                <Box component="form" onSubmit={handleSubmit} className="p-4">
+                    <TextField fullWidth label="Goal Title" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. Complete my first 10K" required error={Boolean(errors.title)} helperText={errors.title} margin="normal" />
+                    <TextField fullWidth label="Description" name="description" value={formData.description} onChange={handleChange} placeholder="Describe your goal..." multiline rows={3} margin="normal" />
 
-                        {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
-                    </div>
+                    <TextField
+                        fullWidth
+                        label="Target Date"
+                        name="targetDate"
+                        type="date"
+                        value={formData.targetDate}
+                        onChange={handleChange}
+                        required
+                        error={Boolean(errors.targetDate)}
+                        helperText={errors.targetDate}
+                        margin="normal"
+                        slotProps={{
+                            inputLabel: {
+                                shrink: true,
+                            },
+                        }}
+                    />
 
-                    <div>
-                        <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Description</label>
+                    <Box sx={{ mt: 3 }}>
+                        <Box className="d-flex justify-content-between align-items-center">
+                            <Typography variant="body2" fontWeight={600}>
+                                Progress
+                            </Typography>
 
-                        <textarea
-                            name="description"
-                            rows="3"
-                            value={formData.description}
-                            onChange={handleChange}
-                            placeholder="Describe your goal..."
-                            className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 resize-none"
-                        />
-                    </div>
+                            <Typography variant="body2" fontWeight={700} color="primary">
+                                {formData.progress}%
+                            </Typography>
+                        </Box>
 
-                    <div>
-                        <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Target Date *</label>
+                        <Slider value={Number(formData.progress)} onChange={handleProgressChange} min={0} max={100} step={1} valueLabelDisplay="auto" sx={{ mt: 1 }} />
 
-                        <input
-                            type="date"
-                            name="targetDate"
-                            value={formData.targetDate}
-                            onChange={handleChange}
-                            className={`w-full px-3.5 py-2 text-sm bg-white border ${errors.targetDate ? "border-red-500 focus:ring-red-500" : "border-slate-200 focus:ring-slate-900"} rounded-xl focus:outline-none focus:ring-2`}
-                        />
+                        {errors.progress && (
+                            <Typography variant="caption" color="error">
+                                {errors.progress}
+                            </Typography>
+                        )}
+                    </Box>
 
-                        {errors.targetDate && <p className="text-xs text-red-500 mt-1">{errors.targetDate}</p>}
-                    </div>
+                    <FormControl fullWidth margin="normal" error={Boolean(errors.status)}>
+                        <InputLabel>Status</InputLabel>
 
-                    <div>
-                        <div className="flex items-center justify-between mb-1">
-                            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">Progress</label>
-
-                            <span className="text-xs font-semibold text-slate-500">{formData.progress}%</span>
-                        </div>
-
-                        <input type="range" name="progress" min="0" max="100" step="1" value={formData.progress} onChange={handleChange} className="w-full accent-slate-900" />
-
-                        {errors.progress && <p className="text-xs text-red-500 mt-1">{errors.progress}</p>}
-                    </div>
-
-                    <div>
-                        <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Status</label>
-
-                        <select name="status" value={formData.status} onChange={handleChange} className={`w-full px-3.5 py-2 text-sm bg-white border ${errors.status ? "border-red-500 focus:ring-red-500" : "border-slate-200 focus:ring-slate-900"} rounded-xl focus:outline-none focus:ring-2`}>
+                        <Select name="status" value={formData.status} label="Status" onChange={handleChange}>
                             {statuses.map((status) => (
-                                <option key={status} value={status}>
+                                <MenuItem key={status} value={status}>
                                     {status}
-                                </option>
+                                </MenuItem>
                             ))}
-                        </select>
+                        </Select>
 
-                        {errors.status && <p className="text-xs text-red-500 mt-1">{errors.status}</p>}
-                    </div>
+                        {errors.status && (
+                            <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
+                                {errors.status}
+                            </Typography>
+                        )}
+                    </FormControl>
 
-                    <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
-                        <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-colors">
+                    <Divider className="my-4" />
+
+                    <Box className="d-flex justify-content-end gap-2">
+                        <Button type="button" variant="outlined" color="inherit" onClick={onClose}>
                             Cancel
-                        </button>
+                        </Button>
 
-                        <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors shadow-sm">
+                        <Button type="submit" variant="contained">
                             {editGoals ? "Update Goal" : "Create Goal"}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                        </Button>
+                    </Box>
+                </Box>
+            </Box>
+        </Modal>
     );
 };
 

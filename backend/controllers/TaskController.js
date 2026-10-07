@@ -20,13 +20,27 @@ exports.getTaskById = async (req, res) => {
 };
 
 exports.addNewTask = async (req, res) => {
-    const newTask = new Task({
-        ...req.body,
-        userId: req.user.role === "admin" ? req.body.userId : req.user._id,
-    });
+    try {
+        const newTask = new Task({
+            userId: req.user._id,
+            title: req.body.title,
+            description: req.body.description,
+            dueDate: req.body.dueDate,
+            priority: req.body.priority,
+            status: req.body.status,
+        });
 
-    await newTask.save();
-    res.json(newTask);
+        await newTask.save();
+
+        res.status(201).json(newTask);
+    } catch (error) {
+        console.error("Error creating task:", error);
+
+        res.status(500).json({
+            message: "Failed to create task",
+            error: error.message,
+        });
+    }
 };
 
 exports.updateTask = async (req, res) => {

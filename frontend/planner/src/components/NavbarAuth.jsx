@@ -1,15 +1,25 @@
 import { useEffect, useState } from "react";
-import { Outlet } from "react-router";
+import { Navigate, Outlet } from "react-router";
 import Navbar from "./Navbar";
 import api from "../utils/api";
 
 function AdminAuth() {
     const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
 
     useEffect(() => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            setError(true);
+            setLoading(false);
+            return;
+        }
+
         api.get("/users/:id", {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
+                Authorization: `Bearer ${token}`,
             },
         })
             .then((response) => {
@@ -17,17 +27,28 @@ function AdminAuth() {
             })
             .catch((error) => {
                 console.error(error);
+
+                localStorage.removeItem("token");
+                localStorage.removeItem("role");
+
+                setError(true);
+            })
+            .finally(() => {
+                setLoading(false);
             });
     }, []);
 
-    if (!user) {
+    if (loading) {
         return <p>Loading...</p>;
+    }
+
+    if (error || !user) {
+        return <Navigate to="/" replace />;
     }
 
     return (
         <>
             <Navbar user={user} />
-            {/* This is a placeholder for different child pages */}
             <Outlet />
         </>
     );

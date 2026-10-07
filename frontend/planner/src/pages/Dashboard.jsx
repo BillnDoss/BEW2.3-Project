@@ -2,40 +2,42 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import api from "../utils/api";
 import Chip from "@mui/material/Chip";
+import Button from "@mui/material/Button";
+import AdminTaskModal from "../components/AdminTaskModal";
 
 function Dashboard() {
     const [users, setUsers] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [goals, setGoals] = useState([]);
     const [reminders, setReminders] = useState([]);
-    const [newAdminTask, setNewAdminTask] = useState({
-        userId: "",
-        title: "",
-        description: "",
-        priority: "Medium",
-        status: "Pending",
-        dueDate: "",
-    });
+    const [addAdminTask, setAddAdminTask] = useState(false);
     const [filter, setFilter] = useState("All");
     const navigate = useNavigate();
 
     useEffect(() => {
         const getAllData = async () => {
             try {
-                const userToken = localStorage.getItem("token");
-                console.log(userToken);
-                if (userToken == null) throw new Error("User Token is unavailable");
+                const token = localStorage.getItem("token");
+
+                if (!token) {
+                    throw new Error("Token unavailable");
+                }
+
                 const config = {
                     headers: {
-                        Authorization: `Bearer ${userToken}`,
+                        Authorization: `Bearer ${token}`,
                     },
                 };
-                const [usersResponse, tasksResponse, goalsResponse, remindersResponse] = await Promise.all([api.get("/users", config), api.get("/tasks", config), api.get("/goals", config), api.get("/reminders", config)]);
 
-                setUsers(usersResponse.data);
-                setTasks(tasksResponse.data);
-                setGoals(goalsResponse.data);
-                setReminders(remindersResponse.data);
+                const usersData = await api.get("/users", config);
+                const tasksData = await api.get("/tasks", config);
+                const goalsData = await api.get("/goals", config);
+                const remindersData = await api.get("/reminders", config);
+
+                setUsers(usersData.data);
+                setTasks(tasksData.data);
+                setGoals(goalsData.data);
+                setReminders(remindersData.data);
             } catch (error) {
                 console.log(error);
                 localStorage.removeItem("token");
@@ -46,300 +48,187 @@ function Dashboard() {
         getAllData();
     }, [navigate]);
 
-    const addAdminTask = async (e) => {
-        e.preventDefault();
-
-        try {
-            const userToken = localStorage.getItem("token");
-
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${userToken}`,
-                },
-            };
-
-            const response = await api.post("/tasks", newAdminTask, config);
-
-            setTasks((previousTasks) => [...previousTasks, response.data]);
-
-            setNewAdminTask({
-                userId: "",
-                title: "",
-                description: "",
-                priority: "Medium",
-                status: "Pending",
-                dueDate: "",
-            });
-        } catch (error) {
-            console.log(error);
-        }
-    };
-
-    const filteredRoles = users.filter((user) => {
-        if (filter === "All") {
-            return true;
-        }
-
-        return user.role === filter;
+    const filteredUsers = users.filter((user) => {
+        return filter === "All" || user.role === filter;
     });
 
     const priorityColor = (priority) => {
-        switch (priority) {
-            case "Low":
-                return "success";
-            case "Medium":
-                return "warning";
-            case "High":
-                return "error";
-            default:
-                return "default";
-        }
+        if (priority === "Low") return "success";
+        if (priority === "Medium") return "warning";
+        if (priority === "High") return "error";
+        return "default";
     };
 
     const statusColor = (status) => {
-        switch (status) {
-            case "Pending":
-                return "default";
-            case "In Progress":
-                return "info";
-            case "Completed":
-                return "success";
-            case "Active":
-                return "primary"; 
-            default:
-                return "default";
+        if (status === "In Progress") return "info";
+        if (status === "Completed") return "success";
+        if (status === "Active") return "primary";
+        return "default";
+    };
+
+    const formatDate = (date) => {
+        return new Date(date).toLocaleDateString("en-US");
+    };
+
+    const deleteUserTask = async (taskId) => {
+        const confirmed = window.confirm("Are you sure?");
+
+        if (!confirmed) return;
+
+        try {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                throw new Error("Token unavailable");
+            }
+
+            await api.delete(`/tasks/${taskId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            setTasks((prevTasks) => prevTasks.filter((task) => task._id !== taskId));
+        } catch (error) {
+            console.error("Failed to delete task:", error);
+            alert("Unable to delete Task");
         }
     };
 
     return (
-        <>
-            <h1>Dashboard</h1>
+        <div className="container py-4">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h1>Dashboard</h1>
 
-            <h2>Add Task</h2>
+                <Button variant="contained" onClick={() => setAddAdminTask(true)}>
+                    Add Task
+                </Button>
+            </div>
 
-            <form onSubmit={addAdminTask}>
-                <div>
-                    <label>Assign To:</label>
+            <AdminTaskModal
+                open={addAdminTask}
+                onClose={() => setAddAdminTask(false)}
+                users={users}
+                onTaskAdded={(newTask) => {
+                    setTasks((prev) => [...prev, newTask]);
+                }}
+            />
 
-                    <select
-                        value={newAdminTask.userId}
-                        onChange={(e) =>
-                            setNewAdminTask({
-                                ...newAdminTask,
-                                userId: e.target.value,
-                            })
-                        }
-                        required
-                    >
-                        <option value="">Select a user</option>
+            <div className="mb-4">
+                <label className="me-2">Filter:</label>
 
-                        {users.map((user) => (
-                            <option key={user._id} value={user._id}>
-                                {user.name} ({user.email})
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div>
-                    <label>Title:</label>
-
-                    <input
-                        type="text"
-                        value={newAdminTask.title}
-                        onChange={(e) =>
-                            setNewAdminTask({
-                                ...newAdminTask,
-                                title: e.target.value,
-                            })
-                        }
-                        required
-                    />
-                </div>
-
-                <div>
-                    <label>Description:</label>
-
-                    <textarea
-                        value={newAdminTask.description}
-                        onChange={(e) =>
-                            setNewAdminTask({
-                                ...newAdminTask,
-                                description: e.target.value,
-                            })
-                        }
-                    />
-                </div>
-
-                <div>
-                    <label>Priority:</label>
-
-                    <select
-                        value={newAdminTask.priority}
-                        onChange={(e) =>
-                            setNewAdminTask({
-                                ...newAdminTask,
-                                priority: e.target.value,
-                            })
-                        }
-                    >
-                        <option value="Low">Low</option>
-                        <option value="Medium">Medium</option>
-                        <option value="High">High</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label>Status:</label>
-
-                    <select
-                        value={newAdminTask.status}
-                        onChange={(e) =>
-                            setNewAdminTask({
-                                ...newAdminTask,
-                                status: e.target.value,
-                            })
-                        }
-                    >
-                        <option value="Pending">Pending</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Completed">Completed</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label>Due Date:</label>
-
-                    <input
-                        type="date"
-                        value={newAdminTask.dueDate}
-                        onChange={(e) =>
-                            setNewAdminTask({
-                                ...newAdminTask,
-                                dueDate: e.target.value,
-                            })
-                        }
-                        required
-                    />
-                </div>
-
-                <button type="submit">Add Task</button>
-            </form>
-
-            <hr />
-
-            <h2>Users</h2>
-
-            <div>
-                <label>Filter by Role: </label>
-
-                <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+                <select className="form-select d-inline-block" style={{ width: "150px" }} value={filter} onChange={(e) => setFilter(e.target.value)}>
                     <option value="All">All</option>
                     <option value="admin">Admin</option>
                     <option value="user">User</option>
                 </select>
             </div>
 
-            <br />
-            {filteredRoles.map((user) => {
-                const Tasks = tasks.filter((task) => String(task.userId) === String(user._id));
-                const Goals = goals.filter((goal) => String(goal.userId) === String(user._id));
-                const Reminders = reminders.filter((reminder) => String(reminder.userId) === String(user._id));
+            <div className="row g-3">
+                {filteredUsers.map((user) => {
+                    const userTasks = tasks.filter((task) => String(task.userId) === String(user._id));
+                    const userGoals = goals.filter((goal) => String(goal.userId) === String(user._id));
+                    const userReminders = reminders.filter((reminder) => String(reminder.userId) === String(user._id));
 
-                return (
-                    <div key={user._id}>
-                        <h2>{user.name}</h2>
-                        <p>{user.email}</p>
-                        <Chip
-                            label={user.role}
-                            size="small"
-                            sx={{
-                                backgroundColor: user.role === "admin" ? "#0dcaf0" : "#6c757d",
-                                color: user.role === "admin" ? "#000" : "#fff",
-                                fontWeight: 500,
-                            }}
-                        />
+                    return (
+                        <div className="col-12 col-md-6" key={user._id}>
+                            <div className="card h-100">
+                                <div className="card-body">
+                                    <div className="d-flex justify-content-between">
+                                        <div>
+                                            <h4>{user.name}</h4>
+                                            <p className="text-muted">{user.email}</p>
+                                        </div>
 
-                        <h3>Tasks</h3>
+                                        <Chip
+                                            label={user.role}
+                                            size="small"
+                                            sx={{
+                                                backgroundColor: user.role === "admin" ? "#0dcaf0" : "#6c757d",
+                                                color: user.role === "admin" ? "#000" : "#fff",
+                                                fontWeight: 500,
+                                            }}
+                                        />
+                                    </div>
 
-                        {Tasks.length === 0 ? (
-                            <p>No tasks found.</p>
-                        ) : (
-                            Tasks.map((task) => (
-                                <div key={task._id}>
-                                    <h4>{task.title}</h4>
-                                    <p>{task.description}</p>
-                                    <p>
-                                        Priority: <Chip label={task.priority} color={priorityColor(task.priority)} size="small" />
-                                    </p>
+                                    <hr />
 
-                                    <p>
-                                        Status: <Chip label={task.status} color={statusColor(task.status)} size="small" />
-                                    </p>
+                                    <h5>Tasks</h5>
 
-                                    <p>
-                                        Due:{" "}
-                                        <strong>
-                                            {new Date(task.dueDate).toLocaleDateString("en-US", {
-                                                year: "numeric",
-                                                month: "long",
-                                                day: "numeric",
-                                            })}
-                                        </strong>
-                                    </p>
+                                    {userTasks.length === 0 ? (
+                                        <p className="text-muted">No tasks found.</p>
+                                    ) : (
+                                        userTasks.map((task) => (
+                                            <div key={task._id} className="border rounded p-2 mb-2">
+                                                <div className="d-flex justify-content-between">
+                                                    <strong>{task.title}</strong>
+
+                                                    <Chip label={task.priority} color={priorityColor(task.priority)} size="small" />
+                                                </div>
+
+                                                <Button variant="outlined" color="error" size="small" onClick={() => deleteUserTask(task._id)}>
+                                                    Delete
+                                                </Button>
+
+                                                <p className="mb-1">{task.description}</p>
+
+                                                <small className="text-muted">
+                                                    {task.status} · Due {formatDate(task.dueDate)}
+                                                </small>
+                                            </div>
+                                        ))
+                                    )}
+
+                                    <h5 className="mt-4">Goals</h5>
+
+                                    {userGoals.length === 0 ? (
+                                        <p className="text-muted">No goals found.</p>
+                                    ) : (
+                                        userGoals.map((goal) => (
+                                            <div key={goal._id} className="border rounded p-2 mb-2">
+                                                <div className="d-flex justify-content-between">
+                                                    <strong>{goal.title}</strong>
+                                                    <Chip label={goal.status} color={statusColor(goal.status)} size="small" />
+                                                </div>
+                                                <p className="mb-1">{goal.description}</p>
+                                                <small>Progress: {goal.progress}%</small>
+                                                <div className="progress mt-1">
+                                                    <div
+                                                        className="progress-bar"
+                                                        style={{
+                                                            width: `${goal.progress}%`,
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+
+                                    <h5 className="mt-4">Reminders</h5>
+
+                                    {userReminders.length === 0 ? (
+                                        <p className="text-muted">No reminders found.</p>
+                                    ) : (
+                                        userReminders.map((reminder) => (
+                                            <div key={reminder._id} className="border rounded p-2 mb-2">
+                                                <div className="d-flex justify-content-between">
+                                                    <strong>{reminder.title}</strong>
+
+                                                    <Chip label={reminder.status} size="small" />
+                                                </div>
+
+                                                <p className="mb-0">{reminder.description}</p>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
-                            ))
-                        )}
-
-                        <h3>Goals</h3>
-
-                        {Goals.length === 0 ? (
-                            <p>No goals found.</p>
-                        ) : (
-                            Goals.map((goal) => (
-                                <div key={goal._id}>
-                                    <h4>{goal.title}</h4>
-                                    <p>{goal.description}</p>
-                                    <p>Progress: {goal.progress}%</p>
-                                    <p>
-                                        Status: <Chip label={goal.status} color={statusColor(goal.status)} size="small" />
-                                    </p>
-
-                                    <p>
-                                        Achieve By:{" "}
-                                        <strong>
-                                            {new Date(goal.targetDate).toLocaleDateString("en-US", {
-                                                year: "numeric",
-                                                month: "long",
-                                                day: "numeric",
-                                            })}
-                                        </strong>
-                                    </p>
-                                </div>
-                            ))
-                        )}
-
-                        <h3>Reminders</h3>
-
-                        {Reminders.length === 0 ? (
-                            <p>No reminders found.</p>
-                        ) : (
-                            Reminders.map((reminder) => (
-                                <div key={reminder._id}>
-                                    <h4>{reminder.title}</h4>
-                                    <p>{reminder.description}</p>
-                                    <p>
-                                        Status: <Chip label={reminder.status} color={statusColor(reminder.status)} size="small" />
-                                    </p>
-                                </div>
-                            ))
-                        )}
-
-                        <hr />
-                    </div>
-                );
-            })}
-        </>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
     );
 }
+
 export default Dashboard;

@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem, Button, IconButton } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 const TaskModal = ({ isOpen, onClose, onSave, editTask = null }) => {
     const defaultState = {
@@ -6,11 +8,11 @@ const TaskModal = ({ isOpen, onClose, onSave, editTask = null }) => {
         description: "",
         dueDate: "",
         priority: "Medium",
-        status: "Active",
+        status: "Pending",
     };
 
     const priorities = ["Low", "Medium", "High"];
-    const statuses = ["Active", "Completed"];
+    const statuses = ["Pending", "In Progress", "Completed"];
 
     const [formData, setFormData] = useState(defaultState);
     const [errors, setErrors] = useState({});
@@ -24,7 +26,7 @@ const TaskModal = ({ isOpen, onClose, onSave, editTask = null }) => {
                 description: editTask.description || "",
                 dueDate: editTask.dueDate ? new Date(editTask.dueDate).toISOString().split("T")[0] : "",
                 priority: editTask.priority || "Medium",
-                status: editTask.status || "Active",
+                status: editTask.status || "Pending",
             });
         } else {
             setFormData(defaultState);
@@ -32,10 +34,6 @@ const TaskModal = ({ isOpen, onClose, onSave, editTask = null }) => {
 
         setErrors({});
     }, [isOpen, editTask]);
-
-    if (!isOpen) {
-        return null;
-    }
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -57,6 +55,7 @@ const TaskModal = ({ isOpen, onClose, onSave, editTask = null }) => {
         e.preventDefault();
 
         const newErrors = {};
+
         if (!formData.title.trim()) {
             newErrors.title = "Task title is required";
         }
@@ -79,111 +78,104 @@ const TaskModal = ({ isOpen, onClose, onSave, editTask = null }) => {
         }
 
         const payload = {
-            title: formData.title,
-            description: formData.description,
+            title: formData.title.trim(),
+            description: formData.description.trim(),
             dueDate: formData.dueDate,
             priority: formData.priority,
             status: formData.status,
         };
-        console.log("Adding new task:", payload);
+
         onSave(payload);
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                    <h2 className="text-lg font-bold text-slate-900">{editTask ? "Edit Task Details" : "Add New Task"}</h2>
-
-                    <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50 transition-colors">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+        <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="sm">
+            <DialogTitle className="border-bottom px-4 py-3">
+                <div className="d-flex align-items-center justify-content-between">
+                    <h5 className="mb-0 fw-bold">{editTask ? "Edit Task Details" : "Add New Task"}</h5>
+                    <IconButton onClick={onClose} size="small" aria-label="Close">
+                        <CloseIcon />
+                    </IconButton>
                 </div>
+            </DialogTitle>
 
-                <form onSubmit={handleSubmit} className="p-6 flex-1 overflow-y-auto space-y-4">
-                    <div>
-                        <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Task Title *</label>
+            <form onSubmit={handleSubmit}>
+                <DialogContent className="p-4">
+                    <div className="row g-3">
+                        <div className="col-12">
+                            <TextField fullWidth label="Task Title" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. Finish project report" error={Boolean(errors.title)} helperText={errors.title} required />
+                        </div>
 
-                        <input
-                            type="text"
-                            name="title"
-                            value={formData.title}
-                            onChange={handleChange}
-                            placeholder="e.g. Finish project report"
-                            className={`w-full px-3.5 py-2 text-sm bg-white border ${errors.title ? "border-red-500 focus:ring-red-500" : "border-slate-200 focus:ring-slate-900"} rounded-xl focus:outline-none focus:ring-2`}
-                        />
+                        <div className="col-12">
+                            <TextField fullWidth multiline rows={3} label="Description" name="description" value={formData.description} onChange={handleChange} placeholder="Describe your task..." />
+                        </div>
 
-                        {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
+                        <div className="col-12">
+                            <TextField
+                                fullWidth
+                                type="date"
+                                label="Due Date"
+                                name="dueDate"
+                                value={formData.dueDate}
+                                onChange={handleChange}
+                                error={Boolean(errors.dueDate)}
+                                helperText={errors.dueDate}
+                                required
+                                slotProps={{
+                                    inputLabel: {
+                                        shrink: true,
+                                    },
+                                }}
+                            />
+                        </div>
+
+                        <div className="col-md-6">
+                            <FormControl fullWidth error={Boolean(errors.priority)}>
+                                <InputLabel>Priority</InputLabel>
+
+                                <Select name="priority" value={formData.priority} label="Priority" onChange={handleChange}>
+                                    {priorities.map((priority) => (
+                                        <MenuItem key={priority} value={priority}>
+                                            {priority}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+
+                                {errors.priority && <div className="text-danger small mt-1">{errors.priority}</div>}
+                            </FormControl>
+                        </div>
+
+                        <div className="col-md-6">
+                            <FormControl fullWidth error={Boolean(errors.status)}>
+                                <InputLabel>Status</InputLabel>
+
+                                <Select name="status" value={formData.status} label="Status" onChange={handleChange}>
+                                    {statuses.map((status) => (
+                                        <MenuItem key={status} value={status}>
+                                            {status}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+
+                                {errors.status && <div className="text-danger small mt-1">{errors.status}</div>}
+                            </FormControl>
+                        </div>
                     </div>
-                    <div>
-                        <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Description</label>
+                </DialogContent>
 
-                        <textarea
-                            name="description"
-                            rows="3"
-                            value={formData.description}
-                            onChange={handleChange}
-                            placeholder="Describe your task..."
-                            className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 resize-none"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Due Date *</label>
-
-                        <input
-                            type="date"
-                            name="dueDate"
-                            value={formData.dueDate}
-                            onChange={handleChange}
-                            className={`w-full px-3.5 py-2 text-sm bg-white border ${errors.dueDate ? "border-red-500 focus:ring-red-500" : "border-slate-200 focus:ring-slate-900"} rounded-xl focus:outline-none focus:ring-2`}
-                        />
-
-                        {errors.dueDate && <p className="text-xs text-red-500 mt-1">{errors.dueDate}</p>}
-                    </div>
-
-                    <div>
-                        <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Priority</label>
-
-                        <select name="priority" value={formData.priority} onChange={handleChange} className={`w-full px-3.5 py-2 text-sm bg-white border ${errors.priority ? "border-red-500 focus:ring-red-500" : "border-slate-200 focus:ring-slate-900"} rounded-xl focus:outline-none focus:ring-2`}>
-                            {priorities.map((priority) => (
-                                <option key={priority} value={priority}>
-                                    {priority}
-                                </option>
-                            ))}
-                        </select>
-
-                        {errors.priority && <p className="text-xs text-red-500 mt-1">{errors.priority}</p>}
-                    </div>
-
-                    <div>
-                        <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Status</label>
-
-                        <select name="status" value={formData.status} onChange={handleChange} className={`w-full px-3.5 py-2 text-sm bg-white border ${errors.status ? "border-red-500 focus:ring-red-500" : "border-slate-200 focus:ring-slate-900"} rounded-xl focus:outline-none focus:ring-2`}>
-                            {statuses.map((status) => (
-                                <option key={status} value={status}>
-                                    {status}
-                                </option>
-                            ))}
-                        </select>
-
-                        {errors.status && <p className="text-xs text-red-500 mt-1">{errors.status}</p>}
-                    </div>
-
-                    <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
-                        <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-colors">
+                <DialogActions className="border-top px-4 py-3">
+                    <div className="w-100 d-flex justify-content-end gap-2">
+                        <Button type="button" variant="outlined" color="inherit" onClick={onClose}>
                             Cancel
-                        </button>
+                        </Button>
 
-                        <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors shadow-sm">
+                        <Button type="submit" variant="contained">
                             {editTask ? "Update Task" : "Create Task"}
-                        </button>
+                        </Button>
                     </div>
-                </form>
-            </div>
-        </div>
+                </DialogActions>
+            </form>
+        </Dialog>
     );
 };
 

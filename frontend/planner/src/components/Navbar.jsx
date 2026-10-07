@@ -7,6 +7,7 @@ function Navbar({ user }) {
     const onLogout = (e) => {
         e.preventDefault();
         localStorage.removeItem("token");
+        localStorage.removeItem("role");
         navigate("/");
     };
 

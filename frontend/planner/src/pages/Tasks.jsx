@@ -60,6 +60,9 @@ function Tasks() {
                 throw new Error("User Token is unavailable");
             }
 
+            console.log("Sending payload:", payload);
+            console.log("Token exists:", Boolean(userToken));
+
             if (currentTask === null) {
                 const response = await api.post("/tasks", payload, {
                     headers: {
@@ -67,6 +70,7 @@ function Tasks() {
                     },
                 });
 
+                console.log("POST /tasks response:", response);
                 console.log("Created task:", response.data);
 
                 setTasks((previousTasks) => [...previousTasks, response.data]);
@@ -85,9 +89,12 @@ function Tasks() {
             setIsModalOpen(false);
             setCurrentTask(null);
         } catch (error) {
-            console.error("Error saving task:", error.response?.data || error);
+            console.error("SAVE TASK ERROR");
+            console.error("Status:", error.response?.status);
+            console.error("Response:", error.response?.data);
+            console.error("Full error:", error);
 
-            alert("Failed to save task.");
+            alert(error.response?.data?.message || error.response?.data?.error || "Failed to save task.");
         }
     };
 

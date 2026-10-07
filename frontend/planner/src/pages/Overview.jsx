@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import api from "../utils/api";
+import { Card, CardContent, Typography, Button, Chip, LinearProgress, Divider } from "@mui/material";
 
 function Overview() {
     const [username, setUsername] = useState(null);
@@ -52,129 +53,282 @@ function Overview() {
     }, [navigate]);
 
     if (loading) {
-        return <p>Loading...</p>;
+        return (
+            <div className="container py-5 text-center">
+                <Typography variant="h6" color="text.secondary">
+                    Loading...
+                </Typography>
+            </div>
+        );
     }
 
-    // Renders only incomplete Tasks, Goals and Reminders
+    // This only renders incomplete tasks
     const currentTasks = tasks.filter((task) => task.status !== "Completed");
     const currentGoals = goals.filter((goal) => goal.status !== "Completed" && goal.progress < 100);
     const currentReminders = reminders.filter((reminder) => reminder.status !== "Completed");
 
+    // Date formatting helper
+    const formatDate = (date) => {
+        if (!date) return "No date";
+
+        return new Date(date).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+        });
+    };
+
     return (
-        <div>
-            <h1>Welcome back, {username?.name}!</h1>
-            <hr />
+        <div className="container py-4">
+            <div className="mb-4">
+                <Typography variant="h4" component="h1" className="fw-bold">
+                    Welcome back, {username?.name}!
+                </Typography>
 
-            <h2>Summary</h2>
-
-            <div>
-                <h3>Tasks</h3>
-                <p>{currentTasks.length} current tasks</p>
+                <Typography variant="body1" color="text.secondary">
+                    Here's an overview of your current tasks, goals, and reminders.
+                </Typography>
             </div>
-
-            <div>
-                <h3>Goals</h3>
-                <p>{currentGoals.length} current goals</p>
+            <Divider className="mb-4" />
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <Typography variant="h5" component="h2" className="fw-bold">
+                    Summary
+                </Typography>
             </div>
+            <div className="row g-3 mb-5">
+                <div className="col-md-4">
+                    <Card
+                        sx={{
+                            height: "100%",
+                            borderRadius: 2,
+                        }}
+                    >
+                        <CardContent>
+                            <Typography variant="subtitle1" color="text.secondary">
+                                Tasks
+                            </Typography>
 
-            <div>
-                <h3>Reminders</h3>
-                <p>{currentReminders.length} current reminders</p>
+                            <Typography variant="h3" className="fw-bold">
+                                {currentTasks.length}
+                            </Typography>
+
+                            <Typography color="text.secondary">Current tasks</Typography>
+                        </CardContent>
+                    </Card>
+                </div>
+                <div className="col-md-4">
+                    <Card
+                        sx={{
+                            height: "100%",
+                            borderRadius: 2,
+                        }}
+                    >
+                        <CardContent>
+                            <Typography variant="subtitle1" color="text.secondary">
+                                Goals
+                            </Typography>
+
+                            <Typography variant="h3" className="fw-bold">
+                                {currentGoals.length}
+                            </Typography>
+
+                            <Typography color="text.secondary">Current goals</Typography>
+                        </CardContent>
+                    </Card>
+                </div>
+                <div className="col-md-4">
+                    <Card
+                        sx={{
+                            height: "100%",
+                            borderRadius: 2,
+                        }}
+                    >
+                        <CardContent>
+                            <Typography variant="subtitle1" color="text.secondary">
+                                Reminders
+                            </Typography>
+
+                            <Typography variant="h3" className="fw-bold">
+                                {currentReminders.length}
+                            </Typography>
+
+                            <Typography color="text.secondary">Current reminders</Typography>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
+            <div className="mb-5">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                    <Typography variant="h5" component="h2" className="fw-bold">
+                        Current Tasks
+                    </Typography>
 
-            <hr />
-            <h2>Current Tasks</h2>
+                    {currentTasks.length > 5 && (
+                        <Button variant="outlined" size="small" onClick={() => navigate("/tasks")}>
+                            View all
+                        </Button>
+                    )}
+                </div>
 
-            {currentTasks.length === 0 ? (
-                <p>No current tasks.</p>
-            ) : (
-                currentTasks.slice(0, 5).map((task) => (
-                    <div key={task._id}>
-                        <h3>{task.title}</h3>
+                {currentTasks.length === 0 ? (
+                    <Card>
+                        <CardContent>
+                            <Typography color="text.secondary">No current tasks.</Typography>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <div className="row g-3">
+                        {currentTasks.slice(0, 5).map((task) => (
+                            <div className="col-md-6" key={task._id}>
+                                <Card
+                                    sx={{
+                                        height: "100%",
+                                        borderRadius: 2,
+                                    }}
+                                >
+                                    <CardContent>
+                                        <Typography variant="h6" className="fw-bold mb-2">
+                                            {task.title}
+                                        </Typography>
 
-                        <p>{task.description}</p>
+                                        <Typography variant="body2" color="text.secondary" className="mb-3">
+                                            {task.description || "No description"}
+                                        </Typography>
 
-                        <p>Status: {task.status}</p>
+                                        <div className="d-flex gap-2 flex-wrap mb-3">
+                                            <Chip label={task.status} size="small" />
 
-                        <p>Priority: {task.priority}</p>
+                                            <Chip label={task.priority} size="small" color="primary" />
+                                        </div>
 
-                        <p>
-                            Due date:{" "}
-                            {new Date(task.dueDate).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                            })}
-                        </p>
-
-                        <hr />
+                                        <Typography variant="body2" color="text.secondary">
+                                            Due: <strong>{formatDate(task.dueDate)}</strong>
+                                        </Typography>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        ))}
                     </div>
-                ))
-            )}
+                )}
+            </div>
+            <div className="mb-5">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                    <Typography variant="h5" component="h2" className="fw-bold">
+                        Current Goals
+                    </Typography>
 
-            {currentTasks.length > 5 && <button onClick={() => navigate("/tasks")}>View all tasks</button>}
+                    {currentGoals.length > 5 && (
+                        <Button variant="outlined" size="small" onClick={() => navigate("/goals")}>
+                            View all
+                        </Button>
+                    )}
+                </div>
 
-            <hr />
-            <h2>Current Goals</h2>
+                {currentGoals.length === 0 ? (
+                    <Card>
+                        <CardContent>
+                            <Typography color="text.secondary">No current goals.</Typography>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <div className="row g-3">
+                        {currentGoals.slice(0, 5).map((goal) => (
+                            <div className="col-md-6" key={goal._id}>
+                                <Card
+                                    sx={{
+                                        height: "100%",
+                                        borderRadius: 2,
+                                    }}
+                                >
+                                    <CardContent>
+                                        <Typography variant="h6" className="fw-bold mb-2">
+                                            {goal.title}
+                                        </Typography>
 
-            {currentGoals.length === 0 ? (
-                <p>No current goals.</p>
-            ) : (
-                currentGoals.slice(0, 5).map((goal) => (
-                    <div key={goal._id}>
-                        <h3>{goal.title}</h3>
+                                        <Typography variant="body2" color="text.secondary" className="mb-3">
+                                            {goal.description || "No description"}
+                                        </Typography>
 
-                        <p>{goal.description}</p>
+                                        {/* Progress */}
+                                        <div className="d-flex justify-content-between mb-1">
+                                            <Typography variant="body2">Progress</Typography>
 
-                        <p>Status: {goal.status}</p>
+                                            <Typography variant="body2">{goal.progress}%</Typography>
+                                        </div>
 
-                        <p>Progress: {goal.progress}%</p>
+                                        <LinearProgress
+                                            variant="determinate"
+                                            value={goal.progress || 0}
+                                            sx={{
+                                                height: 8,
+                                                borderRadius: 5,
+                                            }}
+                                        />
 
-                        <p>
-                            Target date:{" "}
-                            {new Date(goal.targetDate).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                            })}
-                        </p>
+                                        <div className="mt-3">
+                                            <Chip label={goal.status} size="small" />
+                                        </div>
 
-                        <hr />
+                                        <Typography variant="body2" color="text.secondary" className="mt-3">
+                                            Target: <strong>{formatDate(goal.targetDate)}</strong>
+                                        </Typography>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        ))}
                     </div>
-                ))
-            )}
+                )}
+            </div>
+            <div className="mb-5">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                    <Typography variant="h5" component="h2" className="fw-bold">
+                        Current Reminders
+                    </Typography>
 
-            {currentGoals.length > 5 && <button onClick={() => navigate("/goals")}>View all goals</button>}
+                    {currentReminders.length > 5 && (
+                        <Button variant="outlined" size="small" onClick={() => navigate("/reminders")}>
+                            View all
+                        </Button>
+                    )}
+                </div>
 
-            <hr />
-            <h2>Current Reminders</h2>
+                {currentReminders.length === 0 ? (
+                    <Card>
+                        <CardContent>
+                            <Typography color="text.secondary">No current reminders.</Typography>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <div className="row g-3">
+                        {currentReminders.slice(0, 5).map((reminder) => (
+                            <div className="col-md-6" key={reminder._id}>
+                                <Card
+                                    sx={{
+                                        height: "100%",
+                                        borderRadius: 2,
+                                    }}
+                                >
+                                    <CardContent>
+                                        <Typography variant="h6" className="fw-bold mb-2">
+                                            {reminder.title}
+                                        </Typography>
 
-            {currentReminders.length === 0 ? (
-                <p>No current reminders.</p>
-            ) : (
-                currentReminders.slice(0, 5).map((reminder) => (
-                    <div key={reminder._id}>
-                        <h3>{reminder.title}</h3>
+                                        <Typography variant="body2" color="text.secondary" className="mb-3">
+                                            {reminder.description || "No description"}
+                                        </Typography>
 
-                        <p>{reminder.description}</p>
+                                        <Chip label={reminder.status} size="small" color="primary" />
 
-                        <p>Status: {reminder.status}</p>
-
-                        <p>
-                            Remind at:{" "}
-                            {new Date(reminder.remindAt).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                            })}
-                        </p>
-
-                        <hr />
+                                        <Typography variant="body2" color="text.secondary" className="mt-3">
+                                            Remind at: <strong>{formatDate(reminder.remindAt)}</strong>
+                                        </Typography>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        ))}
                     </div>
-                ))
-            )}
-
-            {currentReminders.length > 5 && <button onClick={() => navigate("/reminders")}>View all reminders</button>}
+                )}
+            </div>
         </div>
     );
 }

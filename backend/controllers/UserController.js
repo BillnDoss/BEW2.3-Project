@@ -1,4 +1,7 @@
 const User = require("../models/User");
+const Task = require("../models/Tasks");
+const Goal = require("../models/Goals");
+const Reminder = require("../models/Reminders");
 const jwt = require("jsonwebtoken");
 
 exports.register = async (req, res) => {
@@ -141,6 +144,28 @@ exports.changePassword = async (req, res) => {
             message: "Password changed successfully",
         });
     } catch (error) {
+        res.status(500).json({
+            error: error.message,
+        });
+    }
+};
+
+exports.deleteUserAndData = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({
+                error: "User not found",
+            });
+        }
+        await Task.deleteMany({ userId: id });
+        await Goal.deleteMany({ userId: id });
+        await Reminder.deleteMany({ userId: id });
+        await User.findByIdAndDelete(id);
+        res.status(204).send();
+    } catch (error) {
+        console.error("Delete user error:", error);
         res.status(500).json({
             error: error.message,
         });

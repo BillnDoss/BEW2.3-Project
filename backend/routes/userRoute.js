@@ -17,4 +17,7 @@ router.patch("/:id", authenticate, userController.updateCurrentUser);
 
 router.patch("/:id/password", authenticate, userController.changePassword);
 
+router.delete("/:id", authenticate, userController.deleteUserAndData);
+
+
 module.exports = router;

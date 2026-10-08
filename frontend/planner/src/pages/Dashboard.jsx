@@ -4,6 +4,7 @@ import api from "../utils/api";
 import Chip from "@mui/material/Chip";
 import Button from "@mui/material/Button";
 import AdminTaskModal from "../components/AdminTaskModal";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 function Dashboard() {
     const [users, setUsers] = useState([]);
@@ -95,6 +96,29 @@ function Dashboard() {
         }
     };
 
+    const deleteUser = async (userId) => {
+        const confirmAlert = window.confirm("Are you sure you want to delete this user?");
+        if (!confirmAlert) return;
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error("Token unavailable");
+            }
+            await api.delete(`/users/${userId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setUsers((prevUsers) => prevUsers.filter((user) => user._id !== userId));
+            setTasks((prevTasks) => prevTasks.filter((task) => String(task.userId) !== String(userId)));
+            setGoals((prevGoals) => prevGoals.filter((goal) => String(goal.userId) !== String(userId)));
+            setReminders((prevReminders) => prevReminders.filter((reminder) => String(reminder.userId) !== String(userId)));
+        } catch (error) {
+            console.error("Failed to delete user:", error);
+            alert("Unable to delete specified user");
+        }
+    };
+
     return (
         <div className="container py-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -149,6 +173,9 @@ function Dashboard() {
                                                 fontWeight: 500,
                                             }}
                                         />
+                                        <Button variant="outlined" color="error" size="small" onClick={() => deleteUser(user._id)}>
+                                            <DeleteIcon />
+                                        </Button>
                                     </div>
 
                                     <hr />

@@ -28,8 +28,18 @@ exports.login = async (req, res) => {
     try {
         const user = await User.findOne({ email: req.body.email });
 
-        if (!user || !user.comparePassword(req.body.password)) {
-            throw new Error("Invalid username or password");
+        if (!user) {
+            return res.status(401).json({
+                error: "Invalid email or password",
+            });
+        }
+
+        const passwordMatched = await user.comparePassword(req.body.password);
+
+        if (!passwordMatched) {
+            return res.status(401).json({
+                error: "Invalid email or password",
+            });
         }
 
         const token = jwt.sign(

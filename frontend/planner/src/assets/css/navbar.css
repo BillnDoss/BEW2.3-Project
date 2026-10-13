@@ -1,0 +1,46 @@
+.dailyflow-navbar {
+    background-color: #38bdf8;
+    padding: 12px 20px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+}
+
+.dailyflow-navbar .navbar-brand {
+    color: #0f172a;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+}
+
+.dailyflow-navbar .navbar-brand:hover {
+    color: #1e293b;
+}
+
+.dailyflow-navbar .nav-link {
+    color: #0f172a;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    border-radius: 6px;
+}
+
+.dailyflow-navbar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    color: #0f172a;
+}
+
+.dailyflow-navbar .nav-link.active {
+    background-color: #0284c7;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.dailyflow-navbar button.nav-link {
+    border: none;
+    background: transparent;
+}
+
+.dailyflow-navbar .navbar-toggler {
+    border-color: rgba(15, 23, 42, 0.4);
+}
+
+.dailyflow-navbar .navbar-toggler-icon {
+    filter: brightness(0) saturate(100%) invert(7%) sepia(16%) saturate(2300%) hue-rotate(183deg) brightness(95%) contrast(95%);
+}

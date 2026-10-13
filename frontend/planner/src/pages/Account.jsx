@@ -133,7 +133,9 @@ function Account() {
                 name: response.data.name || "",
                 email: response.data.email || "",
             });
+
             setIsEditing(false);
+            navigate("/");
         } catch (error) {
             console.error("Failed to update user:", error.response?.data || error);
 
@@ -222,6 +224,7 @@ function Account() {
             });
 
             setchangePassword(false);
+            navigate("/");
         } catch (error) {
             console.error("Failed to change password:", error.response?.data || error);
 

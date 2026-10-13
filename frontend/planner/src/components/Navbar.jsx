@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from "react-router";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import "../assets/css/navbar.css";
 
 function Navbar({ user }) {
     const navigate = useNavigate();
@@ -12,9 +13,9 @@ function Navbar({ user }) {
     };
 
     return (
-        <nav className="navbar navbar-expand-lg navbar-light bg-danger">
+        <nav className="navbar navbar-expand-lg dailyflow-navbar">
             <div className="container-fluid">
-                <NavLink className={({ isActive }) => (isActive ? "navbar-brand active" : "navbar-brand")} to="/overview">
+                <NavLink className={({ isActive }) => `navbar-brand fw-bold fs-4 ${isActive ? "active" : ""}`} to="/overview">
                     DailyFlow
                 </NavLink>
                 <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,7 +65,7 @@ function Navbar({ user }) {
                     <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
                         <li className="nav-item">
                             <NavLink className="nav-link" to="/account">
-                            <AccountCircleIcon />
+                                <AccountCircleIcon />
                                 Account
                             </NavLink>
                         </li>

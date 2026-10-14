@@ -67,7 +67,6 @@ function Overview() {
     const currentGoals = goals.filter((goal) => goal.status !== "Completed" && goal.progress < 100);
     const currentReminders = reminders.filter((reminder) => reminder.status !== "Completed");
 
-    // Date formatting helper
     const formatDate = (date) => {
         if (!date) return "No date";
 
@@ -249,7 +248,6 @@ function Overview() {
                                             {goal.description || "No description"}
                                         </Typography>
 
-                                        {/* Progress */}
                                         <div className="d-flex justify-content-between mb-1">
                                             <Typography variant="body2">Progress</Typography>
 

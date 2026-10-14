@@ -6,6 +6,7 @@ import ReminderModal from "../components/ReminderModal";
 function Reminders() {
     const [reminders, setReminders] = useState([]);
     const navigate = useNavigate();
+    // This is meant for the goal to reminder function but realised it only adds temp data
     const location = useLocation();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentReminder, setCurrentReminder] = useState(null);
@@ -152,16 +153,15 @@ function Reminders() {
                         <h2>{reminder.title}</h2>
                         <p>{reminder.description}</p>
                         <p>
+                            {" "}
+                            Reminder Date:
                             {new Date(reminder.remindAt).toLocaleDateString("en-US", {
                                 year: "numeric",
                                 month: "long",
                                 day: "numeric",
                             })}
                         </p>
-
-                        {/* Add a badge with button colour depending on status */}
-                        <p>{reminder.status}</p>
-                        {/* Edit and Delete */}
+                        <p>Status: {reminder.status}</p>
                         <div className="flex gap-2 mt-4">
                             <button onClick={() => handleOpenEditForm(reminder)} className="px-4 py-2 text-sm border border-slate-200 rounded-xl hover:bg-slate-50">
                                 Edit

@@ -56,7 +56,7 @@ function Login() {
     return (
         <div className="login-wrapper">
             <form onSubmit={handleSubmit} className="login-card">
-                <h2>Welcome Back</h2>
+                <h2>Login</h2>
 
                 <div className="form-group">
                     <label htmlFor="name">Username</label>
